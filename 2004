@@ -1,0 +1,142 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+// Expense class to represent each expense
+class Expense implements Serializable {
+    private String itemName;
+    private double amount;
+
+    public Expense(String itemName, double amount) {
+        this.itemName = itemName;
+        this.amount = amount;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    @Override
+    public String toString() {
+        return "Item: " + itemName + ", Amount: $" + amount;
+    }
+}
+
+// ExpenseTracker class to manage expenses
+public class ExpenseTracker {
+    private List<Expense> expenses;
+    private Scanner scanner;
+
+    public ExpenseTracker() {
+        expenses = new ArrayList<>();
+        scanner = new Scanner(System.in);
+    }
+
+    // Method to add an expense
+    public void addExpense(String itemName, double amount) {
+        Expense newExpense = new Expense(itemName, amount);
+        expenses.add(newExpense);
+        System.out.println("Expense added successfully.");
+    }
+
+    // Method to display all expenses
+    public void displayAllExpenses() {
+        if (expenses.isEmpty()) {
+            System.out.println("No expenses recorded yet.");
+        } else {
+            System.out.println("List of all expenses:");
+            for (Expense expense : expenses) {
+                System.out.println(expense);
+            }
+        }
+    }
+
+    // Method to calculate total expenses
+    public double calculateTotalExpenses() {
+        double total = 0;
+        for (Expense expense : expenses) {
+            total += expense.getAmount();
+        }
+        return total;
+    }
+
+    // Method to save expenses to a file
+    public void saveExpenses(String fileName) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(expenses);
+            System.out.println("Expenses saved to " + fileName);
+        } catch (IOException e) {
+            System.err.println("Error saving expenses: " + e.getMessage());
+        }
+    }
+
+    // Method to load expenses from a file
+    @SuppressWarnings("unchecked")
+    public void loadExpenses(String fileName) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            expenses = (List<Expense>) ois.readObject();
+            System.out.println("Expenses loaded from " + fileName);
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading expenses: " + e.getMessage());
+        }
+    }
+
+    // Main method to run the expense tracker
+    public static void main(String[] args) {
+        ExpenseTracker tracker = new ExpenseTracker();
+        int choice;
+
+        do {
+            System.out.println("\nExpense Tracker Menu:");
+            System.out.println("1. Add an Expense");
+            System.out.println("2. View All Expenses");
+            System.out.println("3. Calculate Total Expenses");
+            System.out.println("4. Save Expenses to File");
+            System.out.println("5. Load Expenses from File");
+            System.out.println("6. Exit");
+            System.out.print("Enter your choice: ");
+
+            choice = tracker.scanner.nextInt();
+            tracker.scanner.nextLine(); // Consume newline left-over
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter item name: ");
+                    String itemName = tracker.scanner.nextLine();
+                    System.out.print("Enter amount: ");
+                    double amount = tracker.scanner.nextDouble();
+                    tracker.addExpense(itemName, amount);
+                    break;
+                case 2:
+                    tracker.displayAllExpenses();
+                    break;
+                case 3:
+                    double totalExpenses = tracker.calculateTotalExpenses();
+                    System.out.println("Total Expenses: $" + totalExpenses);
+                    break;
+                case 4:
+                    System.out.print("Enter file name to save expenses: ");
+                    String saveFileName = tracker.scanner.nextLine();
+                    tracker.saveExpenses(saveFileName);
+                    break;
+                case 5:
+                    System.out.print("Enter file name to load expenses: ");
+                    String loadFileName = tracker.scanner.nextLine();
+                    tracker.loadExpenses(loadFileName);
+                    break;
+                case 6:
+                    System.out.println("Exiting... Thank you for using Expense Tracker.");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please enter a number between 1 and 6.");
+            }
+        } while (choice != 6);
+
+        tracker.scanner.close();
+    }
+}
